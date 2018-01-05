@@ -15,10 +15,14 @@ import (
 )
 
 const (
-	driverName   = "cloudstack"
-	dockerPort   = 2376
-	swarmPort    = 3376
-	diskDatadisk = "DATADISK"
+	driverName      = "cloudstack"
+	dockerPort      = 2376
+    kubePort        = 6443
+    etcdPortStart   = 2379
+    etcdPortEnd     = 2380
+    webPort   = 80
+	swarmPort       = 3376
+	diskDatadisk    = "DATADISK"
 )
 
 type configError struct {
@@ -395,7 +399,7 @@ func (d *Driver) Create() error {
 		}
 		p.SetSecuritygroupnames([]string{d.MachineName})
 	}
-	log.Info("Creating CloudStack instance...")
+	log.Info("Creating CloudStack instance ...")
 	vm, err := cs.VirtualMachine.DeployVirtualMachine(p)
 	if err != nil {
 		return err
@@ -979,6 +983,24 @@ func (d *Driver) configureFirewallRules() error {
 		return err
 	}
 
+	log.Info("Creating firewall rule for Kubernetes port ...")
+	if err := d.configureFirewallRule(kubePort, kubePort); err != nil {
+		return err
+	}
+
+	log.Info("Creating firewall rules for etcd ports ...")
+	if err := d.configureFirewallRule(etcdPortStart, etcdPortStart); err != nil {
+		return err
+	}
+	if err := d.configureFirewallRule(etcdPortEnd, etcdPortEnd); err != nil {
+		return err
+	}
+
+    log.Info("Creating firewall rule for web port ...")
+	if err := d.configureFirewallRule(webPort, webPort); err != nil {
+		return err
+	}
+
 	if d.SwarmMaster {
 		log.Info("Creating firewall rule for swarm port ...")
 		if err := d.configureFirewallRule(swarmPort, swarmPort); err != nil {
@@ -1012,6 +1034,24 @@ func (d *Driver) configurePortForwardingRules() error {
 
 	log.Info("Creating port forwarding rule for docker port ...")
 	if err := d.configurePortForwardingRule(dockerPort, dockerPort); err != nil {
+		return err
+	}
+
+	log.Info("Creating port forwarding rule for Kubernetes port ...")
+	if err := d.configurePortForwardingRule(kubePort, kubePort); err != nil {
+		return err
+	}
+
+	log.Info("Creating port forwarding rules for etcd ports ...")
+	if err := d.configurePortForwardingRule(etcdPortStart, etcdPortStart); err != nil {
+		return err
+	}
+	if err := d.configurePortForwardingRule(etcdPortEnd, etcdPortEnd); err != nil {
+		return err
+	}
+
+	log.Info("Creating port forwarding rule for web port ...")
+	if err := d.configurePortForwardingRule(webPort, webPort); err != nil {
 		return err
 	}
 
@@ -1053,6 +1093,30 @@ func (d *Driver) createSecurityGroup() error {
 
 	p2.SetStartport(dockerPort)
 	p2.SetEndport(dockerPort)
+	if _, err := cs.SecurityGroup.AuthorizeSecurityGroupIngress(p2); err != nil {
+		return err
+	}
+
+	p2.SetStartport(kubePort)
+	p2.SetEndport(kubePort)
+	if _, err := cs.SecurityGroup.AuthorizeSecurityGroupIngress(p2); err != nil {
+		return err
+	}
+
+	p2.SetStartport(etcdPortStart)
+	p2.SetEndport(etcdPortStart)
+	if _, err := cs.SecurityGroup.AuthorizeSecurityGroupIngress(p2); err != nil {
+		return err
+	}
+
+	p2.SetStartport(etcdPortEnd)
+	p2.SetEndport(etcdPortEnd)
+	if _, err := cs.SecurityGroup.AuthorizeSecurityGroupIngress(p2); err != nil {
+		return err
+	}
+
+	p2.SetStartport(webPort)
+	p2.SetEndport(webPort)
 	if _, err := cs.SecurityGroup.AuthorizeSecurityGroupIngress(p2); err != nil {
 		return err
 	}

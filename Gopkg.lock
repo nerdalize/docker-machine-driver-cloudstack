@@ -9,7 +9,19 @@
 
 [[projects]]
   name = "github.com/docker/machine"
-  packages = ["libmachine/drivers","libmachine/drivers/plugin","libmachine/drivers/plugin/localbinary","libmachine/drivers/rpc","libmachine/log","libmachine/mcnflag","libmachine/mcnutils","libmachine/ssh","libmachine/state","libmachine/version","version"]
+  packages = [
+    "libmachine/drivers",
+    "libmachine/drivers/plugin",
+    "libmachine/drivers/plugin/localbinary",
+    "libmachine/drivers/rpc",
+    "libmachine/log",
+    "libmachine/mcnflag",
+    "libmachine/mcnutils",
+    "libmachine/ssh",
+    "libmachine/state",
+    "libmachine/version",
+    "version"
+  ]
   revision = "a650a404fc3e006fea17b12615266168db79c776"
   version = "v0.7.0"
 
@@ -21,7 +33,11 @@
 
 [[projects]]
   name = "golang.org/x/crypto"
-  packages = ["curve25519","ssh","ssh/terminal"]
+  packages = [
+    "curve25519",
+    "ssh",
+    "ssh/terminal"
+  ]
   revision = "beef0f4390813b96e8e68fd78570396d0f4751fc"
 
 [solve-meta]
